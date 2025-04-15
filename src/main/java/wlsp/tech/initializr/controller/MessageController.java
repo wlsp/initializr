@@ -1,6 +1,7 @@
 package wlsp.tech.initializr.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import wlsp.tech.initializr.model.Message;
 import wlsp.tech.initializr.model.MessageNotFoundException;
@@ -22,26 +23,26 @@ public class MessageController {
     );
 
     @GetMapping
-    public List<Message> getMessages() {
-        return messages;
+    public ResponseEntity<List<Message>> getMessages() {
+        return ResponseEntity.status(HttpStatus.OK).body(messages);
     }
 
     @PostMapping
-    public Message addMessage(@RequestBody Message message) {
+    public ResponseEntity<Message> createdMessage(@RequestBody Message message) {
         messages.add(message);
-        return message;
+        return ResponseEntity.status(HttpStatus.CREATED).body(message);
     }
 
     @GetMapping("/{id}")
-    public Optional <Message> getMessageById(@PathVariable String id) throws MessageNotFoundException {
-        return Optional.ofNullable(messages.stream()
+    public ResponseEntity<Optional<Message>> getMessageById(@PathVariable String id) throws MessageNotFoundException {
+        return ResponseEntity.status(HttpStatus.OK).body(Optional.ofNullable(messages.stream()
                 .filter(m -> m.id().equals(id))
                 .findFirst()
-                .orElseThrow(() -> new MessageNotFoundException("Message with id " + id + " not found!")));
+                .orElseThrow(() -> new MessageNotFoundException("Message with id " + id + " not found!"))));
     }
 
     @DeleteMapping("/{id}")
-    public String deleteMessage(@PathVariable String id){
+    public ResponseEntity<String> deleteMessage(@PathVariable String id){
         Optional<Message>  message = Optional.ofNullable(messages.stream()
                 .filter(m -> m.id().equals(id))
                 .findFirst()
@@ -49,7 +50,7 @@ public class MessageController {
                         + id + " does not exist!")));
 
         message.ifPresent(messages::remove);
-        return "The message with id " + id + " was removed!";
+        return ResponseEntity.ok("The message with id " + id + " was successfully removed!");
     }
 
     @ExceptionHandler(MessageNotFoundException.class)
